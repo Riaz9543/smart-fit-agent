@@ -1,0 +1,13 @@
+# Secrets
+serviceAccount.json
+*.serviceAccount.json
+.env
+.env.*
+
+# Node
+node_modules/
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

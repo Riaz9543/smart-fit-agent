@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>StyleMatch AI — Virtual Try-On</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div>
+        <h1>StyleMatch <span>AI</span></h1>
+        <p class="tagline">Find your fit. See it on you.</p>
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button id="adminBtn" class="ghost-btn small" style="height: 40px; padding: 0 12px; border-radius: 12px;">+ Add Item</button>
+      <button id="catalogueBtn" class="ghost-btn small" style="height: 40px; padding: 0 12px; border-radius: 12px;">Catalogue</button>
+      <button id="cartBtn" class="cart-btn" aria-label="Open cart" style="width: 40px; height: 40px; border-radius: 12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span id="cartBadge" class="cart-badge" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="steps" aria-label="Progress">
+    <div class="step active" data-step="1"><span>1</span><label>Photo</label></div>
+    <div class="step" data-step="2"><span>2</span><label>Vibe</label></div>
+    <div class="step" data-step="4"><span>3</span><label>Looks</label></div>
+    <div class="step" data-step="5"><span>4</span><label>Cart</label></div>
+  </nav>
+
+  <main class="app-main">
+
+    <!-- STEP 1: PHOTO -->
+    <section id="step-photo" class="panel active" aria-labelledby="photoTitle">
+      <div class="panel-head">
+        <h2 id="photoTitle">Your full-body photo</h2>
+        <p>One clear, front-facing photo. We compress it in your browser before upload.</p>
+      </div>
+      <div class="privacy-note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Processed in memory. Never stored on our servers.</span>
+      </div>
+      <label id="dropzone" class="dropzone" for="photoInput">
+        <input id="photoInput" type="file" accept="image/*" hidden />
+        <div id="dropPlaceholder" class="drop-placeholder">
+          <div class="upload-icon">⬆</div>
+          <strong>Tap to upload a full-body photo</strong>
+          <span>JPG or PNG · compressed to ≤ 600 KB</span>
+        </div>
+        <div id="photoPreviewWrap" class="photo-preview-wrap" hidden>
+          <img id="photoPreview" alt="Your uploaded photo" />
+        </div>
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Your height (cm)</span>
+          <input id="heightInput" type="number" inputmode="numeric" min="120" max="230" value="170" required />
+        </label>
+      </div>
+      <label class="consent">
+        <input id="consentInput" type="checkbox" />
+        <span>I confirm I am 18+ and consent to AI processing of this photo for virtual try-on.</span>
+      </label>
+      <button id="analyzeBtn" class="primary-btn" disabled>
+        <span>Analyze My Body</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </section>
+
+    <!-- STEP 2: MEASUREMENTS & VIBE -->
+    <section id="step-measure" class="panel" aria-labelledby="measureTitle">
+      <div class="panel-head">
+        <h2 id="measureTitle">Set your Vibe</h2>
+        <p>Describe how you want to look, and confirm your measurements.</p>
+      </div>
+      <div id="confidenceBadge" class="confidence-badge" hidden></div>
+      
+      <div id="measurementForm" class="measurement-grid"></div>
+      
+      <div class="panel-actions">
+        <button id="backToPhoto" class="ghost-btn">← Back</button>
+        <button id="generateLooksBtn" class="primary-btn">
+          <span>Generate 3 Looks</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 4: 3 UNIQUE LOOKS -->
+    <section id="step-tryon" class="panel" aria-labelledby="tryonTitle">
+      <div class="panel-head">
+        <h2 id="tryonTitle">Your 3 unique outfits</h2>
+        <p>Tap an outfit to see the products in it and add them to your cart.</p>
+      </div>
+      
+      <!-- HACKATHON FEATURE: Stylist Notes -->
+      <div id="stylistNotes" class="stylist-notes" hidden>
+        <div class="stylist-notes-header">✨ AI Stylist Notes</div>
+        <p id="stylistNotesText">Analyzing your silhouette...</p>
+      </div>
+
+      <div id="tryonGrid" class="tryon-grid"></div>
+
+      <div id="lookProducts" class="look-products" hidden></div>
+
+      <div class="panel-actions">
+        <button id="backToMeasure" class="ghost-btn">← Edit Vibe</button>
+        <div class="action-group">
+          <a id="downloadResult" class="ghost-btn" download="stylematch-look.png" hidden>Download</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: CART -->
+    <section id="step-cart" class="panel" aria-labelledby="cartTitle">
+      <div class="panel-head">
+        <h2 id="cartTitle">Your cart</h2>
+        <p>Mock checkout — no payment is taken.</p>
+      </div>
+      <div id="cartItems" class="cart-items"></div>
+      <div id="cartSummary" class="cart-summary" hidden>
+        <div class="summary-row"><span>Subtotal</span><strong id="cartSubtotal">$0</strong></div>
+        <div class="summary-row"><span>Shipping</span><strong>Free</strong></div>
+        <div class="summary-row total"><span>Total</span><strong id="cartTotal">$0</strong></div>
+        <button id="checkoutBtn" class="primary-btn full">Place Mock Order</button>
+      </div>
+      <div id="cartEmpty" class="empty-state">
+        <p>Your cart is empty.</p>
+        <button id="startOverBtn" class="ghost-btn">Start a new try-on</button>
+      </div>
+    </section>
+
+    <!-- VIEW: CATALOGUE -->
+    <section id="view-catalogue" class="panel" aria-labelledby="catalogueTitle">
+      <div class="panel-head">
+        <h2 id="catalogueTitle">Our Catalogue</h2>
+        <p>Browse items from Firebase.</p>
+      </div>
+      <div id="catalogueGrid" class="catalogue-grid"></div>
+      <button id="backFromCatalogue" class="ghost-btn full">← Back</button>
+    </section>
+
+    <!-- VIEW: ADMIN ADD PRODUCT -->
+    <section id="view-admin" class="panel" aria-labelledby="adminTitle">
+      <div class="panel-head">
+        <h2 id="adminTitle">Add New Garment</h2>
+        <p>Upload directly to Firestore.</p>
+      </div>
+      <div class="measurement-grid">
+        <label class="field full"><span>Garment Name</span><input id="addName" type="text" placeholder="e.g. Oxford Shirt"></label>
+        <label class="field"><span>Price ($)</span><input id="addPrice" type="number" placeholder="e.g. 99"></label>
+        <label class="field"><span>Gender</span><select id="addGender"><option value="male">male</option><option value="female">female</option></select></label>
+        <label class="field"><span>Category</span><select id="addCategory"><option value="shirt">Shirt</option><option value="pants">Pants</option><option value="jacket">Jacket</option><option value="dress">Dress</option><option value="skirt">Skirt</option></select></label>
+        <label class="field"><span>Colour</span><input id="addColour" type="text" placeholder="e.g. navy"></label>
+        <label class="field full"><span>Style</span><input id="addStyle" type="text" placeholder="e.g. classic, tailored"></label>
+        <label class="field full"><span>Image URL</span><input id="addImage" type="url" placeholder="https://..."></label>
+        <label class="field full"><span>Description</span><input id="addDesc" type="text" placeholder="Short description..."></label>
+      </div>
+      <div class="panel-actions">
+        <button id="backFromAdmin" class="ghost-btn">← Back</button>
+        <button id="saveProductBtn" class="primary-btn">Save to Firestore</button>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="loadingOverlay" class="loading-overlay" hidden>
+    <div class="spinner"></div>
+    <p id="loadingText">Working…</p>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, writeBatch, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyACvhZNlo3nhSWyDxOIv-V7jYwuYPe8eM4",
+      authDomain: "ai-cloth-59efa.firebaseapp.com",
+      projectId: "ai-cloth-59efa",
+      storageBucket: "ai-cloth-59efa.firebasestorage.app",
+      messagingSenderId: "424160442574",
+      appId: "1:424160442574:web:9ffb39834672d4a2e7389f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.FirebaseDB = { db, collection, getDocs, doc, writeBatch, addDoc };
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
